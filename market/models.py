@@ -1,9 +1,9 @@
 from sqlalchemy import Table, Column, String, Integer, Enum, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import enum
-from market.db import metadata
+from db import metadata
 
 
 class UserRole(str, enum.Enum):
@@ -48,13 +48,13 @@ orders = Table(
     "orders", metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
-    Column("ticker", String, ForeignKey("instruments.ticker", ondelete="CASCADE"), nullable=False),
+    Column("ticker", String, ForeignKey("instruments.ticker", ondelete="CASCADE"), nullable=False, default='RUB'),
     Column("direction", Enum(Direction), nullable=False),
     Column("qty", Integer, nullable=False),
     Column("price", Integer),  # NULL = рыночная заявка
     Column("status", Enum(OrderStatus), nullable=False, default=OrderStatus.NEW),
     Column("filled", Integer, nullable=False, default=0),
-    Column("timestamp", DateTime, nullable=False, default=datetime.utcnow),
+    Column("timestamp", DateTime, nullable=False, default=datetime.now(timezone.utc)),
 )
 
 transactions = Table(
@@ -63,5 +63,5 @@ transactions = Table(
     Column("ticker", String, ForeignKey("instruments.ticker", ondelete="CASCADE"), nullable=False),
     Column("amount", Integer, nullable=False),
     Column("price", Integer, nullable=False),
-    Column("timestamp", DateTime, nullable=False, default=datetime.utcnow),
+    Column("timestamp", DateTime, nullable=False, default=datetime.now(timezone.utc)),
 )
